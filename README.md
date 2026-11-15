@@ -1,0 +1,68 @@
+# DARIUSBURST Chronicle Saviours, natively
+
+Taito and Pyramid's entry in the Darius line for the PS Vita (PCSE00792), recompiled to native code
+and run on the desktop and on Android handhelds through the
+[Nativ](https://github.com/CrownParkComputing/nativ) engine — a static recompiler that turns the
+Vita's ARM code into C, and a runtime that stands in for the console's kernel and draws its GXM
+graphics on Vulkan.
+
+**No part of the game is here.** This repository holds the port's own work: the pack that describes
+the game to the engine, and the setup that builds it. The game's code and data come from **your own
+copy**, are decrypted on your machine, and stay there.
+
+## What you need
+
+- A copy of the game you own **and its 1.11 update** — a folder taken off a Vita (`ux0:app/PCSE00792`
+  with `ux0:patch/PCSE00792`, and `sce_sys/package/work.bin`), or the PKGs with their licence. The
+  port plays the game with 1.11 layered over it; that is the version it pins.
+- Linux, macOS or Windows, with a C compiler and a Vulkan-capable GPU.
+- **About 25 GB free, and patience.** This is by far the largest game the engine runs: 23.5 MB of
+  Vita code, 39,879 functions, 10.5 million instructions, which become 1.4 GB of C across 64 part
+  files and a 160 MB program. The first build takes an hour or two.
+
+## Build it
+
+```bash
+./setup.sh /path/to/your/dump                    # one copy holding the game and its update
+./setup.sh /path/to/game /path/to/update         # or the two separately, game first
+```
+
+That fetches the engine, fetches Sony's firmware once (the engine needs the console's own libgxm,
+GPU services library and libc), decrypts your copy, **checks it is the right game and version**
+against the SHA-256 this port pins, then recompiles it and builds the host program. It prints the
+command to play it, or pass `--run` to go straight there.
+
+If the compile runs your machine out of memory, give it `JOBS=<n>` — the build otherwise picks how
+many part files to compile at once from the memory free at the time, and a part file is ~20 MB of C.
+
+## Playing it
+
+Keyboard and mouse, or a controller. The game opens with an autosave notice and then assigns you a
+cabinet; confirm both to reach the title screen.
+
+The menu (frame rate, renderer, controls) is **F10**, or both stick clicks together on a controller.
+
+## On Android
+
+The engine builds this for arm64 handhelds and packages it with the game's own icon, as its own app:
+
+```bash
+TARGET=android engine/dev/android-install.sh PCSE00792 <adb serial>
+```
+
+A Mesa Turnip driver can replace the system Vulkan with `TURNIP_DRIVER=<a .so or Turnip .zip>`.
+
+## What works
+
+Boots, runs and draws: loading screen → the autosave notice → the title screen with its menu, at a
+steady 60 fps. Beyond that is not yet explored.
+
+The port's notebook is `pack/pack.toml`: what the game needs, which version it plays, and — kept as
+a worked example — the hunt for the bug that blocked it, where a bogus length the game handed to
+`memset` quietly zeroed the engine's thread stacks and surfaced three frames later as the display
+queue losing the game's flip callback.
+
+## Licence
+
+GPL-2.0-or-later, as the engine is. See [LICENSE](LICENSE). The game is not covered by it and is not
+distributed here.
