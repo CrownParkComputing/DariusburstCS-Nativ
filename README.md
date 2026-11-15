@@ -56,7 +56,14 @@ The engine builds this for arm64 handhelds and packages it with the game's own i
 TARGET=android engine/dev/android-install.sh PCSE00792 <adb serial>
 ```
 
-A Mesa Turnip driver can replace the system Vulkan with `TURNIP_DRIVER=<a .so or Turnip .zip>`.
+The in-game menu is **Android's Back button**, or three fingers at once on the screen (there is no
+F10 on a handheld, and Android keeps the controller's Guide button for itself).
+
+A Mesa Turnip driver can replace the device's own Vulkan, which on most handhelds is years behind:
+pass `TURNIP_DRIVER=<a .so or Turnip .zip>` to the install above and then pick it in the menu under
+**Display → Vulkan driver**. Drivers live in `drivers/` beside the game's files, so a newer Turnip
+is one `adb push` into that folder away rather than a reinstall. The choice takes effect when the
+game next starts.
 
 ## What works
 
