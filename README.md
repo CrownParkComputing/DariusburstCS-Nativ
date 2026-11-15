@@ -42,6 +42,12 @@ cabinet; confirm both to reach the title screen.
 
 The menu (frame rate, renderer, controls) is **F10**, or both stick clicks together on a controller.
 
+**On an ultra-wide screen, set Display → Fullscreen and aspect → Fill.** The arcade modes draw the
+cabinet's two-screens-wide view letterboxed into the Vita's 960x544 frame, so by default most of the
+window is black bars and the picture is a thin strip. Fill crops to the window's shape: at 32:9 it
+keeps the middle 270 of the 544 rows, and the arcade view is about 277 rows tall, so the bars go and
+little else does. CS mode uses a taller view, where Fit is the better choice.
+
 ## On Android
 
 The engine builds this for arm64 handhelds and packages it with the game's own icon, as its own app:
