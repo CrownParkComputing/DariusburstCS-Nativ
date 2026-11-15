@@ -50,20 +50,54 @@ little else does. CS mode uses a taller view, where Fit is the better choice.
 
 ## On Android
 
-The engine builds this for arm64 handhelds and packages it with the game's own icon, as its own app:
+The engine builds this for arm64 handhelds and packages it as its own app, with the game's own icon
+off the Vita dump. Once, for the toolchain it cross-compiles against:
 
 ```bash
-TARGET=android engine/dev/android-install.sh PCSE00792 <adb serial>
+engine/runtime/platform/android/setup-toolchain.sh     # builds SDL3 for arm64 (a few minutes)
 ```
 
-The in-game menu is **Android's Back button**, or three fingers at once on the screen (there is no
-F10 on a handheld, and Android keeps the controller's Guide button for itself).
+That wants a Linux x86-64 machine with an Android SDK (build-tools and a platform; `ANDROID_HOME`,
+default `~/Android/Sdk`) and an NDK — `ANDROID_NDK` picks one, otherwise the newest installed. API 28
+is the floor, the oldest Android with the Vulkan the renderer needs. There is no Gradle anywhere: the
+package is a manifest, one dex and a few `.so` files, assembled with the SDK's own `aapt2`, `d8` and
+`apksigner`.
 
-A Mesa Turnip driver can replace the device's own Vulkan, which on most handhelds is years behind:
-pass `TURNIP_DRIVER=<a .so or Turnip .zip>` to the install above and then pick it in the menu under
-**Display → Vulkan driver**. Drivers live in `drivers/` beside the game's files, so a newer Turnip
-is one `adb push` into that folder away rather than a reinstall. The choice takes effect when the
-game next starts.
+Then, with the device on USB or paired over wireless adb:
+
+```bash
+engine/dev/android-install.sh PCSE00792 <adb serial>     # `adb devices` lists serials
+```
+
+That builds the game for arm64, installs the package, and pushes the game's data beside it — the
+data is **never** inside the package. The push is the slow part over wireless adb; it only has to
+happen once.
+
+It runs at 60 fps on a Retroid Pocket Flip2, on Turnip.
+
+**The in-game menu is Android's Back button**, or three fingers at once on the screen. (There is no
+F10 on a handheld, and Android keeps the controller's Guide button for itself.) Inside it the d-pad
+moves, A activates, and L1/R1 change section.
+
+A Mesa Turnip driver can replace the device's own Vulkan, which on most handhelds is years behind —
+a Retroid Pocket Flip2's Adreno driver reports Vulkan 1.1 where Turnip reports 1.3. Pass
+`TURNIP_DRIVER=<a .so or a Turnip .zip>` to the install above, then pick it in the menu under
+**Display → Vulkan driver** and restart the game. Drivers live in `drivers/` beside the game's files,
+so a newer Turnip is one `adb push` into that folder away rather than a reinstall. The startup log
+(`adb logcat -s nativ`) names the driver actually in use, which is the only place the answer shows.
+
+## Keeping it up to date
+
+The engine is its own repository and keeps moving; a game is only as new as the last time it was
+built, and the menu and runtime are compiled into each game's binary. To pick up engine changes:
+
+```bash
+./setup.sh /path/to/your/dump                                  # desktop: pulls the engine, rebuilds what changed
+APK_ONLY=1 engine/dev/android-install.sh PCSE00792 <adb serial>  # Android: the package only, keeping the pushed data
+```
+
+`APK_ONLY=1` is the one to use for every Android rebuild after the first: it skips re-pushing the
+game's data, which is all of the waiting.
 
 ## What works
 
